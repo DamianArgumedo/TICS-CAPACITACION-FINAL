@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Galería — Capacitación TICs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="estilos.css">
+  <style>
+    /* ══════════════════════════════
+       GALERÍA — barra lateral
+    ══════════════════════════════ */
+    .gallery-layout {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+      margin-bottom: 2.5rem;
+    }
+
+    .gallery-sidebar {
+      background: linear-gradient(145deg, #130022, #0d0018);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      position: sticky;
+      top: 1.5rem;
+      max-height: 80vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--purple-1) transparent;
+    }
+
+    .gallery-sidebar::-webkit-scrollbar { width: 4px; }
+    .gallery-sidebar::-webkit-scrollbar-thumb {
+      background: var(--purple-1);
+      border-radius: 4px;
+    }
+
+    .gallery-sidebar-title {
+      font-family: 'Orbitron', monospace;
+      font-size: .62rem;
+      color: var(--cyan);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-shadow: var(--glow-cyan);
+      margin-bottom: .8rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .gallery-thumbs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .4rem;
+    }
+
+    .gallery-thumb {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: rgba(123,47,255,.07);
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+      position: relative;
+    }
+
+    .gallery-thumb:hover,
+    .gallery-thumb.active {
+      border-color: var(--cyan);
+      box-shadow: var(--glow-cyan);
+    }
+
+    .gallery-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    .gallery-thumb-empty {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .45rem;
+      color: var(--text-dim);
+      opacity: .35;
+    }
+
+    .thumb-num {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .42rem;
+      color: var(--cyan);
+      background: rgba(0,0,0,.65);
+      padding: 1px 2px;
+      border-radius: 2px;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .gallery-main {
+      background: linear-gradient(135deg, rgba(19,0,34,.9), rgba(13,0,24,.97));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gallery-main::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--purple-1), var(--cyan), transparent);
+      z-index: 1;
+    }
+
+    .gallery-display {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #030006;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .gallery-display img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      transition: opacity .3s ease;
+    }
+
+    .gallery-empty-msg {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .8rem;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .gallery-empty-msg .big-icon { font-size: 4rem; opacity: .25; }
+
+    .gallery-caption {
+      padding: .75rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+      background: rgba(0,0,0,.35);
+    }
+
+    .caption-name {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .7rem;
+      color: var(--purple-3);
+      letter-spacing: 1px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 50%;
+    }
+
+    .caption-right {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .gallery-btn {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .68rem;
+      color: var(--text-dim);
+      background: rgba(123,47,255,.1);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: .28rem .65rem;
+      cursor: pointer;
+      transition: all .2s;
+      letter-spacing: 1px;
+    }
+
+    .gallery-btn:hover {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      box-shadow: var(--glow-cyan);
+    }
+
+    .caption-count {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .65rem;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    /* ══════════════════════════════
+       FORMULARIO
+    ══════════════════════════════ */
+    .form-block {
+      background: linear-gradient(135deg, rgba(19,0,34,.85), rgba(13,0,24,.95));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .form-block::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--purple-1), var(--cyan), transparent);
+    }
+
+    .form-block h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: .95rem;
+      color: var(--purple-3);
+      margin-bottom: 1.8rem;
+      letter-spacing: 2px;
+    }
+
+    .form-grid { display: grid; gap: 1.4rem; }
+
+    .form-field { display: flex; flex-direction: column; gap: .4rem; }
+
+    .form-q-num {
+      font-family: 'Orbitron', monospace;
+      font-size: .58rem;
+      color: var(--purple-3);
+      letter-spacing: 3px;
+      opacity: .8;
+    }
+
+    .form-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .72rem;
+      color: var(--cyan);
+      letter-spacing: 1.5px;
+      text-shadow: var(--glow-cyan);
+      line-height: 1.5;
+    }
+
+    .form-input,
+    .form-textarea {
+      background: rgba(13,0,24,.9);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      font-size: .92rem;
+      padding: .7rem 1rem;
+      width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: var(--purple-2);
+      box-shadow: var(--glow);
+      background: rgba(19,0,34,.95);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .form-submit {
+      margin-top: .5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-submit {
+      font-family: 'Orbitron', monospace;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(135deg, var(--purple-1), #5b10cc);
+      border: 2px solid var(--purple-2);
+      border-radius: 6px;
+      padding: .85rem 2.2rem;
+      cursor: pointer;
+      transition: all .25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,229,255,.18), transparent);
+      opacity: 0;
+      transition: opacity .25s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glow), 0 6px 24px rgba(123,47,255,.45);
+    }
+
+    .btn-submit:hover::after { opacity: 1; }
+
+    .form-note {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .65rem;
+      color: var(--text-dim);
+      letter-spacing: .5px;
+      line-height: 1.6;
+    }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 750px) {
+      .gallery-layout { grid-template-columns: 1fr; }
+      .gallery-sidebar { position: static; max-height: none; }
+      .gallery-thumbs  { grid-template-columns: repeat(5, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-icon">💻</div>
+      <div>
+        <div class="site-title">Capacitación TICs</div>
+        <div class="site-subtitle">capacitacion COBACH.19</div>
+      </div>
+    </div>
+    <nav>
+      <a href="index.html">⌂ Inicio</a>
+      <a href="modulo1.html">M1 · Software</a>
+      <a href="modulo2.html">M2 · Hardware</a>
+      <a href="modulo3.html">M3 · Sistemas</a>
+      <a href="modulo4.html">M4 · Diseño</a>
+      <a href="galeria.html" class="active">📷 Galería</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-inner">
+
+    <!-- Hero de sección -->
+    <div class="mod-hero">
+      <div class="mod-num-badge">GL</div>
+      <div class="mod-info">
+        <div class="mod-tag">▶ SECCIÓN VISUAL · 20 IMÁGENES</div>
+        <div class="mod-title">📷 Galería</div>
+      </div>
+    </div>
+
+    <div class="content-block" style="margin-bottom:1.5rem;">
+      <h2>// Galería de Imágenes</h2>
+      <div class="content-text">
+        <p>Colección visual de la capacitación TICs. Haz clic en cualquier miniatura
+           de la barra lateral para ampliarla, o usa las teclas ← → para navegar.</p>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         GALERÍA CON BARRA LATERAL
+    ════════════════════════ -->
+    <div class="gallery-layout">
+
+      <!-- Barra lateral: 20 slots -->
+      <aside class="gallery-sidebar">
+        <div class="gallery-sidebar-title">◈ Miniaturas · 20</div>
+        <div class="gallery-thumbs" id="thumbsGrid">
+
+          <!-- Las 20 miniaturas apuntan a imagenes/galeria01.jpg … galeria20.jpg -->
+          <!-- Cambia los nombres de archivo por los tuyos si son distintos        -->
+
+          <div class="gallery-thumb active" id="thumb-0" onclick="showImage(0)" title="Imagen 01">
+            <img src="imagenes/galeria01.jpg" alt="Imagen 01" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>01</span>'">
+            <span class="thumb-num">01</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-1" onclick="showImage(1)" title="Imagen 02">
+            <img src="imagenes/galeria02.jpg" alt="Imagen 02" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>02</span>'">
+            <span class="thumb-num">02</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-2" onclick="showImage(2)" title="Imagen 03">
+            <img src="imagenes/galeria03.jpg" alt="Imagen 03" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>03</span>'">
+            <span class="thumb-num">03</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-3" onclick="showImage(3)" title="Imagen 04">
+            <img src="imagenes/galeria04.jpg" alt="Imagen 04" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>04</span>'">
+            <span class="thumb-num">04</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-4" onclick="showImage(4)" title="Imagen 05">
+            <img src="imagenes/galeria05.jpg" alt="Imagen 05" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>05</span>'">
+            <span class="thumb-num">05</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-5" onclick="showImage(5)" title="Imagen 06">
+            <img src="imagenes/galeria06.jpg" alt="Imagen 06" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>06</span>'">
+            <span class="thumb-num">06</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-6" onclick="showImage(6)" title="Imagen 07">
+            <img src="imagenes/galeria07.jpg" alt="Imagen 07" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>07</span>'">
+            <span class="thumb-num">07</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-7" onclick="showImage(7)" title="Imagen 08">
+            <img src="imagenes/galeria08.jpg" alt="Imagen 08" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>08</span>'">
+            <span class="thumb-num">08</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-8" onclick="showImage(8)" title="Imagen 09">
+            <img src="imagenes/galeria09.jpg" alt="Imagen 09" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>09</span>'">
+            <span class="thumb-num">09</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-9" onclick="showImage(9)" title="Imagen 10">
+            <img src="imagenes/galeria10.jpg" alt="Imagen 10" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>10</span>'">
+            <span class="thumb-num">10</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-10" onclick="showImage(10)" title="Imagen 11">
+            <img src="imagenes/galeria11.jpg" alt="Imagen 11" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>11</span>'">
+            <span class="thumb-num">11</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-11" onclick="showImage(11)" title="Imagen 12">
+            <img src="imagenes/galeria12.jpg" alt="Imagen 12" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>12</span>'">
+            <span class="thumb-num">12</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-12" onclick="showImage(12)" title="Imagen 13">
+            <img src="imagenes/galeria13.jpg" alt="Imagen 13" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>13</span>'">
+            <span class="thumb-num">13</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-13" onclick="showImage(13)" title="Imagen 14">
+            <img src="imagenes/galeria14.jpg" alt="Imagen 14" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>14</span>'">
+            <span class="thumb-num">14</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-14" onclick="showImage(14)" title="Imagen 15">
+            <img src="imagenes/galeria15.jpg" alt="Imagen 15" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>15</span>'">
+            <span class="thumb-num">15</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-15" onclick="showImage(15)" title="Imagen 16">
+            <img src="imagenes/galeria16.jpg" alt="Imagen 16" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>16</span>'">
+            <span class="thumb-num">16</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-16" onclick="showImage(16)" title="Imagen 17">
+            <img src="imagenes/galeria17.jpg" alt="Imagen 17" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>17</span>'">
+            <span class="thumb-num">17</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-17" onclick="showImage(17)" title="Imagen 18">
+            <img src="imagenes/galeria18.jpg" alt="Imagen 18" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>18</span>'">
+            <span class="thumb-num">18</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-18" onclick="showImage(18)" title="Imagen 19">
+            <img src="imagenes/galeria19.jpg" alt="Imagen 19" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>19</span>'">
+            <span class="thumb-num">19</span>
+          </div>
+          <div class="gallery-thumb" id="thumb-19" onclick="showImage(19)" title="Imagen 20">
+            <img src="imagenes/galeria20.jpg" alt="Imagen 20" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=\'gallery-thumb-empty\'>□</div><span class=\'thumb-num\'>20</span>'">
+            <span class="thumb-num">20</span>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- Panel principal de visualización -->
+      <div class="gallery-main">
+        <div class="gallery-display" id="mainDisplay">
+          <img id="mainImg" src="imagenes/galeria01.jpg" alt="Imagen principal"
+               onerror="this.outerHTML='<div class=\'gallery-empty-msg\'><span class=\'big-icon\'>🖼️</span><span>Agrega imágenes a la carpeta imagenes/</span></div>'">
+        </div>
+        <div class="gallery-caption">
+          <span class="caption-name" id="captionName">▸ galeria01.jpg</span>
+          <div class="caption-right">
+            <button class="gallery-btn" onclick="prevImage()">◀ PREV</button>
+            <button class="gallery-btn" onclick="nextImage()">NEXT ▶</button>
+            <span class="caption-count" id="captionCount">01 / 20</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /gallery-layout -->
+
+
+    <!-- ════════════════════════
+         FORMULARIO
+    ════════════════════════ -->
+    <div class="mod-hero" style="margin-top:2rem;">
+      <div class="mod-num-badge" style="font-size:2.2rem; opacity:.6;">FM</div>
+      <div class="mod-info">
+        <div class="mod-tag">▶ EVALUACIÓN · 5 PREGUNTAS</div>
+        <div class="mod-title">📝 Formulario</div>
+      </div>
+    </div>
+
+    <div class="form-block">
+      <h2>// Formulario de Evaluación</h2>
+
+      <form id="evalForm" onsubmit="descargarRespuestas(event)">
+        <div class="form-grid">
+
+          <!-- Nombre -->
+          <div class="form-field">
+            <label class="form-label" for="nombre">▸ Nombre completo del alumno</label>
+            <input class="form-input" type="text" id="nombre"
+                   placeholder="Escribe tu nombre completo..." required>
+          </div>
+
+          <!-- Pregunta 1 -->
+          <div class="form-field">
+            <span class="form-q-num">PREGUNTA 01 / 05</span>
+            <label class="form-label" for="r1">
+              ▸ ¿Qué módulo de la capacitación te resultó más interesante y por qué?
+            </label>
+            <textarea class="form-textarea" id="r1"
+                      placeholder="Escribe tu respuesta aquí..." required></textarea>
+          </div>
+
+          <!-- Pregunta 2 -->
+          <div class="form-field">
+            <span class="form-q-num">PREGUNTA 02 / 05</span>
+            <label class="form-label" for="r2">
+              ▸ ¿Qué herramienta o software aprendiste y utilizarías en tu vida diaria o profesional?
+            </label>
+            <textarea class="form-textarea" id="r2"
+                      placeholder="Escribe tu respuesta aquí..." required></textarea>
+          </div>
+
+          <!-- Pregunta 3 -->
+          <div class="form-field">
+            <span class="form-q-num">PREGUNTA 03 / 05</span>
+            <label class="form-label" for="r3">
+              ▸ ¿Cómo calificarías el nivel de dificultad de la capacitación? (Fácil / Medio / Difícil) Explica.
+            </label>
+            <textarea class="form-textarea" id="r3"
+                      placeholder="Escribe tu respuesta aquí..." required></textarea>
+          </div>
+
+          <!-- Pregunta 4 -->
+          <div class="form-field">
+            <span class="form-q-num">PREGUNTA 04 / 05</span>
+            <label class="form-label" for="r4">
+              ▸ ¿Qué tema o tecnología te gustaría profundizar más en el futuro?
+            </label>
+            <textarea class="form-textarea" id="r4"
+                      placeholder="Escribe tu respuesta aquí..." required></textarea>
+          </div>
+
+          <!-- Pregunta 5 -->
+          <div class="form-field">
+            <span class="form-q-num">PREGUNTA 05 / 05</span>
+            <label class="form-label" for="r5">
+              ▸ ¿Recomendarías esta capacitación a otros compañeros? Justifica tu respuesta.
+            </label>
+            <textarea class="form-textarea" id="r5"
+                      placeholder="Escribe tu respuesta aquí..." required></textarea>
+          </div>
+
+          <!-- Botón -->
+          <div class="form-submit">
+            <button class="btn-submit" type="submit">
+              ⬇ &nbsp;Enviar y Descargar Respuestas
+            </button>
+            <span class="form-note">
+              Al presionar el botón se descargará automáticamente<br>
+              un archivo <strong style="color:var(--cyan);">.txt</strong>
+              con tu nombre y todas tus respuestas.
+            </span>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+
+    <!-- Navegación inferior -->
+    <div class="bottom-nav">
+      <a class="btn-nav home" href="index.html">⌂ Página Principal</a>
+      <a class="btn-nav" href="modulo1.html">→ M1: Software de Aplicación</a>
+      <a class="btn-nav" href="modulo2.html">→ M2: Hardware y Comunicación</a>
+      <a class="btn-nav" href="modulo3.html">→ M3: Desarrollo de Sistemas</a>
+      <a class="btn-nav" href="modulo4.html">→ M4: Software de Diseño</a>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      &copy; 2026 Capacitación TICs<br>
+      Galería · Formulario de Evaluación
+    </div>
+    <div class="footer-center"> TICs </div>
+    <div class="footer-right">
+      <div class="creator-label">Creado por:</div>
+      <div class="creator-name">[ ARGUMEDO LLAMAS ABDI DAMIAN-23190055 y 
+      SANTIAGO PAREDES FONSECA-23190088 ]</div>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+  /* ══════════════════════════════════════
+     GALERÍA
+  ══════════════════════════════════════ */
+  const NAMES = [
+    'galeria01.jpg','galeria02.jpg','galeria03.jpg','galeria04.jpg','galeria05.jpg',
+    'galeria06.jpg','galeria07.jpg','galeria08.jpg','galeria09.jpg','galeria10.jpg',
+    'galeria11.jpg','galeria12.jpg','galeria13.jpg','galeria14.jpg','galeria15.jpg',
+    'galeria16.jpg','galeria17.jpg','galeria18.jpg','galeria19.jpg','galeria20.jpg'
+  ];
+
+  let current = 0;
+
+  const thumbEls  = document.querySelectorAll('.gallery-thumb');
+  const mainDisp  = document.getElementById('mainDisplay');
+  const capName   = document.getElementById('captionName');
+  const capCount  = document.getElementById('captionCount');
+
+  function showImage(idx) {
+    thumbEls.forEach(t => t.classList.remove('active'));
+    thumbEls[idx].classList.add('active');
+    thumbEls[idx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    current = idx;
+
+    const src  = 'imagenes/' + NAMES[idx];
+    const name = NAMES[idx];
+
+    mainDisp.innerHTML = '';
+    const img = document.createElement('img');
+    img.src   = src;
+    img.alt   = name;
+    img.id    = 'mainImg';
+    img.style.opacity    = '0';
+    img.style.transition = 'opacity .3s ease';
+    img.onerror = function () {
+      mainDisp.innerHTML =
+        '<div class="gallery-empty-msg">' +
+        '<span class="big-icon">🖼️</span>' +
+        '<span>SLOT ' + String(idx + 1).padStart(2,'0') + ' — Sin imagen</span>' +
+        '</div>';
+      capName.textContent = '▸ Slot ' + String(idx + 1).padStart(2,'0') + ' — vacío';
+    };
+    mainDisp.appendChild(img);
+    requestAnimationFrame(() => requestAnimationFrame(() => img.style.opacity = '1'));
+
+    capName.textContent  = '▸ ' + name;
+    capCount.textContent = String(idx + 1).padStart(2,'0') + ' / 20';
+  }
+
+  function nextImage() { showImage((current + 1) % 20); }
+  function prevImage() { showImage((current - 1 + 20) % 20); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') nextImage();
+    if (e.key === 'ArrowLeft')  prevImage();
+  });
+
+
+  /* ══════════════════════════════════════
+     FORMULARIO — descarga el .txt
+  ══════════════════════════════════════ */
+  function descargarRespuestas(e) {
+    e.preventDefault();
+
+    const nombre = document.getElementById('nombre').value.trim();
+    const r1     = document.getElementById('r1').value.trim();
+    const r2     = document.getElementById('r2').value.trim();
+    const r3     = document.getElementById('r3').value.trim();
+    const r4     = document.getElementById('r4').value.trim();
+    const r5     = document.getElementById('r5').value.trim();
+
+    const ahora  = new Date();
+    const fecha  = ahora.toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' })
+                   + '  ' + ahora.toLocaleTimeString('es-MX');
+
+    const linea     = '═'.repeat(52);
+    const separador = '─'.repeat(52);
+
+    const preguntas = [
+      '1. ¿Qué módulo de la capacitación te resultó más interesante y por qué?',
+      '2. ¿Qué herramienta o software aprendiste y utilizarías en tu vida diaria o profesional?',
+      '3. ¿Cómo calificarías el nivel de dificultad de la capacitación? (Fácil / Medio / Difícil) Explica.',
+      '4. ¿Qué tema o tecnología te gustaría profundizar más en futuras capacitaciones?',
+      '5. ¿Recomendarías esta capacitación a otros compañeros? Justifica tu respuesta.'
+    ];
+    const respuestas = [r1, r2, r3, r4, r5];
+
+    let txt = linea + '\n';
+    txt += '  CAPACITACIÓN TICs · COBACH.19\n';
+    txt += '  Formulario de Evaluación — Respuestas\n';
+    txt += linea + '\n\n';
+    txt += '  Alumno : ' + (nombre || '(sin nombre)') + '\n';
+    txt += '  Fecha  : ' + fecha + '\n';
+    txt += separador + '\n\n';
+
+    preguntas.forEach((p, i) => {
+      txt += p + '\n';
+      txt += '  Respuesta: ' + (respuestas[i] || '(sin respuesta)') + '\n\n';
+      txt += separador + '\n\n';
+    });
+
+    txt += '  Documento generado automáticamente.\n';
+    txt += '  Capacitación TICs · COBACH.19 · © 2026\n';
+    txt += linea + '\n';
+
+    // Crear el archivo y forzar descarga
+    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const slug = nombre.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_áéíóúñÁÉÍÓÚÑ]/g, '') || 'alumno';
+    const hoy  = ahora.toISOString().slice(0,10).replace(/-/g,'');
+    a.href     = url;
+    a.download = 'respuestas_' + slug + '_' + hoy + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+</script>
+
+</body>
+</html>
